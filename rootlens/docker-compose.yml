@@ -1,0 +1,33 @@
+services:
+  payment-service:
+    build: ./services/payment
+    ports:
+      - "8001:8001"
+
+  analyzer-service:
+    build: ./services/analyzer
+    ports:
+      - "8002:8002"
+    volumes:
+      - analyzer-data:/app/data
+
+  order-service:
+    build: ./services/order
+    environment:
+      PAYMENT_URL: http://payment-service:8001
+      ANALYZER_URL: http://analyzer-service:8002
+    ports:
+      - "8000:8000"
+    depends_on:
+      - payment-service
+      - analyzer-service
+
+  dashboard:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - order-service
+
+volumes:
+  analyzer-data:

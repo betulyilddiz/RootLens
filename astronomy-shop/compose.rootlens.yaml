@@ -1,0 +1,34 @@
+# RootLens bridge for the OpenTelemetry Astronomy Shop Demo.
+# First start Astronomy Shop with compose.yaml + compose.observability.yaml.
+# Then start this file from the astronomy-shop folder.
+services:
+  rootlens-analyzer:
+    build: ../rootlens/services/analyzer
+    container_name: rootlens-analyzer
+    environment:
+      PROMETHEUS_URL: http://prometheus:9090
+      JAEGER_URL: http://jaeger:16686/jaeger/ui
+      OPENSEARCH_URL: http://opensearch:9200
+    ports:
+      - "8002:8002"
+    volumes:
+      - rootlens-data:/app/data
+    networks: [otel-demo]
+
+  rootlens-dashboard:
+    build: ../rootlens/frontend
+    container_name: rootlens-dashboard
+    environment:
+      VITE_ANALYZER_URL: http://localhost:8002
+    ports:
+      - "5173:5173"
+    depends_on: [rootlens-analyzer]
+    networks: [otel-demo]
+
+networks:
+  otel-demo:
+    external: true
+    name: opentelemetry-demo
+
+volumes:
+  rootlens-data:
